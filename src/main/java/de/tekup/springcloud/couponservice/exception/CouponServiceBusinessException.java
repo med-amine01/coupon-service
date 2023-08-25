@@ -1,4 +1,4 @@
-package de.tekup.springcloud.couponservice.exception.coupon;
+package de.tekup.springcloud.couponservice.exception;
 
 public class CouponServiceBusinessException extends RuntimeException {
 

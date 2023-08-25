@@ -3,9 +3,9 @@ package de.tekup.springcloud.couponservice.service;
 import de.tekup.springcloud.couponservice.dto.CouponRequestDTO;
 import de.tekup.springcloud.couponservice.dto.CouponResponseDTO;
 import de.tekup.springcloud.couponservice.entity.Coupon;
-import de.tekup.springcloud.couponservice.exception.coupon.CouponServiceBusinessException;
-import de.tekup.springcloud.couponservice.exception.coupon.CouponAlreadyExistsException;
-import de.tekup.springcloud.couponservice.exception.coupon.CouponNotFoundException;
+import de.tekup.springcloud.couponservice.exception.CouponAlreadyExistsException;
+import de.tekup.springcloud.couponservice.exception.CouponNotFoundException;
+import de.tekup.springcloud.couponservice.exception.CouponServiceBusinessException;
 import de.tekup.springcloud.couponservice.repository.CouponRepository;
 import de.tekup.springcloud.couponservice.util.ValueMapper;
 import lombok.AllArgsConstructor;
@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -27,128 +26,133 @@ public class CouponService {
 
     @Cacheable(value = "coupon")
     public List<CouponResponseDTO> getCoupons() throws CouponServiceBusinessException {
-        List<CouponResponseDTO> couponResponseDTOS;
-
         try {
             log.info("CouponService::getCoupons - Fetching Started.");
 
             List<Coupon> coupons = couponRepository.findAll();
 
-            if (!coupons.isEmpty()) {
-                couponResponseDTOS = coupons.stream()
-                        .map(ValueMapper::convertToDto)
-                        .collect(Collectors.toList());
-            } else {
-                couponResponseDTOS = Collections.emptyList();
-            }
+            List<CouponResponseDTO> couponResponseDTOS = coupons.stream()
+                    .map(ValueMapper::convertToDto)
+                    .collect(Collectors.toList());
 
-            log.info("CouponService::getCoupons - All coupons are fetched. {}", ValueMapper.jsonToString(couponResponseDTOS));
+            log.info("CouponService::getCoupons - Fetched {} coupons", couponResponseDTOS.size());
+
+            log.info("CouponService::getCoupons - Fetching Ends.");
+            return couponResponseDTOS;
+
         } catch (Exception exception) {
-            log.error("Exception occurred while retrieving coupons, Exception message {}", exception.getMessage());
+            log.error("Exception occurred while retrieving coupons, Exception message: {}", exception.getMessage());
             throw new CouponServiceBusinessException("Exception occurred while fetching all coupons");
         }
-
-        log.info("CouponService::getCoupons - Fetching Ends.");
-        return couponResponseDTOS;
     }
+
 
     @Cacheable(value = "coupon")
     public CouponResponseDTO getCouponById(Long id) throws CouponServiceBusinessException {
-        CouponResponseDTO couponResponseDTO;
         try {
             log.info("CouponService::getCouponById - Fetching Started.");
 
             Coupon coupon = couponRepository.findById(id)
                     .orElseThrow(() -> new CouponNotFoundException("Coupon with ID " + id + " not found"));
-            couponResponseDTO = ValueMapper.convertToDto(coupon);
 
-            log.debug("CouponService::getCoupons - Coupon retrieved by ID: {} {}", id, ValueMapper.jsonToString(couponResponseDTO));
+            CouponResponseDTO couponResponseDTO = ValueMapper.convertToDto(coupon);
+
+            log.debug("CouponService::getCouponById - Coupon retrieved by ID: {} {}", id, ValueMapper.jsonToString(couponResponseDTO));
+
+            log.info("CouponService::getCouponById - Fetching Ends.");
+
+            return couponResponseDTO;
+
+        } catch (CouponNotFoundException exception) {
+            log.error(exception.getMessage());
+            throw exception;
+
         } catch (Exception exception) {
-            log.error("Exception occurred while retrieving Coupon, Exception message {}", exception.getMessage());
+            log.error("Exception occurred while retrieving Coupon, Exception message: {}", exception.getMessage());
             throw new CouponServiceBusinessException("Exception occurred while fetching coupon by id");
         }
-
-        log.info("CouponService::getCoupons - Fetching Ends.");
-        return couponResponseDTO;
     }
+
 
     @Cacheable(value = "coupon")
     public CouponResponseDTO getCouponByCode(String code) throws CouponServiceBusinessException {
-        CouponResponseDTO couponResponseDTO = null;
         try {
             log.info("CouponService::getCouponByCode - Fetching Started.");
 
             Coupon coupon = couponRepository.findByCode(code)
                     .orElseThrow(() -> new CouponNotFoundException("Coupon with code " + code + " not found"));
-            couponResponseDTO = ValueMapper.convertToDto(coupon);
 
-            log.debug("CouponService::getCoupons - Coupon retrieved by code: {} {}", code, ValueMapper.jsonToString(couponResponseDTO));
+            CouponResponseDTO couponResponseDTO = ValueMapper.convertToDto(coupon);
+
+            log.debug("CouponService::getCouponByCode - Coupon retrieved by code: {} {}", code, ValueMapper.jsonToString(couponResponseDTO));
+
+            log.info("CouponService::getCouponByCode - Fetching Ends.");
+            return couponResponseDTO;
+
+        } catch (CouponNotFoundException exception) {
+            log.error(exception.getMessage());
+            throw exception;
+
         } catch (Exception exception) {
-            log.error("Exception occurred while retrieving Coupon, Exception message {}", exception.getMessage());
+            log.error("Exception occurred while retrieving Coupon, Exception message: {}", exception.getMessage());
             throw new CouponServiceBusinessException("Exception occurred while fetching coupon by code");
         }
-
-        log.info("CouponService::getCouponByCode - Fetching Ends.");
-        return couponResponseDTO;
     }
 
+
     public CouponResponseDTO createCoupon(CouponRequestDTO couponRequestDTO) {
-        CouponResponseDTO couponResponseDTO;
-
         try {
-            log.info("CouponService::createCoupon creating coupon started.");
-            // Converted to entity
-            Coupon coupon = ValueMapper.convertToEntity(couponRequestDTO);
+            log.info("CouponService::createCoupon - STARTED.");
 
-            Optional<Coupon> existingCoupon = couponRepository.findByCode(couponRequestDTO.getCode());
-            if (existingCoupon.isPresent()) {
+            if (couponRepository.existsByCode(couponRequestDTO.getCode())) {
                 throw new CouponAlreadyExistsException("Coupon with code " + couponRequestDTO.getCode() + " already exists");
             }
 
-            // Saving Coupon
+            Coupon coupon = ValueMapper.convertToEntity(couponRequestDTO);
             Coupon persistedCoupon = couponRepository.save(coupon);
 
-            // Converting Coupon to DTO response
-            couponResponseDTO = ValueMapper.convertToDto(persistedCoupon);
-            log.debug("CouponService::createCoupon received response {}", ValueMapper.jsonToString(couponResponseDTO));
+            CouponResponseDTO couponResponseDTO = ValueMapper.convertToDto(persistedCoupon);
+            log.debug("CouponService::createCoupon - coupon created : {}", ValueMapper.jsonToString(couponResponseDTO));
+
+            log.info("CouponService::createCoupon - ENDS.");
+            return couponResponseDTO;
+
+        } catch (CouponAlreadyExistsException exception) {
+            log.error(exception.getMessage());
+            throw exception;
 
         } catch (Exception exception) {
             log.error("Exception occurred while persisting coupon, Exception message {}", exception.getMessage());
             throw new CouponServiceBusinessException("Exception occurred while creating a new coupon");
         }
-
-        log.info("CouponService::createCoupon - Creating coupon with code: {}", couponResponseDTO.getCode());
-        return couponResponseDTO;
     }
 
     public CouponResponseDTO updateCoupon(Long id, CouponRequestDTO updatedCoupon) throws CouponServiceBusinessException {
-        CouponResponseDTO couponResponseDTO;
-
         try {
-            log.info("CouponService::updateCoupon - Starts.");
-            // Converting Request to Entity
+            log.info("CouponService::updateCoupon - Started.");
+
             Coupon coupon = ValueMapper.convertToEntity(updatedCoupon);
 
-            // Checking if the updated coupon exists
-            CouponResponseDTO fetchedCoupon = getCouponById(id);
+            // Fetch the existing coupon and update its properties
+            CouponResponseDTO existingCoupon = getCouponById(id);
             coupon.setId(id);
-            coupon.setCreatedAt(fetchedCoupon.getCreatedAt());
+            coupon.setCreatedAt(existingCoupon.getCreatedAt());
 
-            // Updating coupon
+            // Update the coupon and convert to response DTO
             Coupon persistedCoupon = couponRepository.save(coupon);
+            CouponResponseDTO couponResponseDTO = ValueMapper.convertToDto(persistedCoupon);
 
-            // Converting to Response
-            couponResponseDTO = ValueMapper.convertToDto(persistedCoupon);
-            log.debug("CouponService::updateCoupon received response {}", ValueMapper.jsonToString(couponResponseDTO));
+            log.debug("CouponService::updateCoupon - Updated coupon: {}", ValueMapper.jsonToString(couponResponseDTO));
+            log.info("CouponService::updateCoupon - Completed for ID: {}", id);
+
+            return couponResponseDTO;
 
         } catch (Exception exception) {
-            log.error("Exception occurred while updating coupon, Exception message {}", exception.getMessage());
+            log.error("Exception occurred while updating coupon, Exception message: {}", exception.getMessage());
             throw new CouponServiceBusinessException("Exception occurred while updating coupon");
         }
-
-        log.info("CouponService::updateCoupon - Updating coupon with ID: {}", id);
-        return couponResponseDTO;
     }
+
 
     public void deleteCoupon(Long id) {
         log.info("CouponService::deleteCoupon - Starts.");
@@ -159,11 +163,17 @@ public class CouponService {
                     .orElseThrow(() -> new CouponNotFoundException("Coupon with ID " + id + " not found"));
 
             couponRepository.delete(coupon);
-            log.info("CouponService::deleteCoupon - Deleting coupon with ID: {}", id);
+            log.info("CouponService::deleteCoupon - Deleted coupon with ID: {}", id);
+        } catch (CouponNotFoundException exception) {
+            log.error(exception.getMessage());
+            throw exception;
+
         } catch (Exception exception) {
-            log.error("Exception occurred while deleting coupon, Exception message {}", exception.getMessage());
-            throw new CouponServiceBusinessException("Exception occurred while deleting a new coupon");
+            log.error("Exception occurred while deleting coupon, Exception message: {}", exception.getMessage());
+            throw new CouponServiceBusinessException("Exception occurred while deleting a coupon");
         }
-        log.info("CouponService::updateCoupon - Ends.");
+
+        log.info("CouponService::deleteCoupon - Ends.");
     }
+
 }

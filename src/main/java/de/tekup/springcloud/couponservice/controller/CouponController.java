@@ -24,7 +24,7 @@ public class CouponController {
     private final CouponService couponService;
 
     @GetMapping
-    public ResponseEntity<APIResponse> getAllCoupons() {
+    public ResponseEntity<APIResponse<List<CouponResponseDTO>>> getAllCoupons() {
         List<CouponResponseDTO> coupons = couponService.getCoupons();
 
         // Builder Design pattern (to avoid complex object creation)
@@ -39,7 +39,7 @@ public class CouponController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<APIResponse> getCouponById(@PathVariable Long id) {
+    public ResponseEntity<APIResponse<CouponResponseDTO>> getCouponById(@PathVariable Long id) {
         log.info("CouponController::getCouponById {}", id);
         CouponResponseDTO couponResponseDTO = couponService.getCouponById(id);
 
@@ -55,7 +55,7 @@ public class CouponController {
     }
 
     @GetMapping("/code/{code}")
-    public ResponseEntity<APIResponse> getCouponByCode(@PathVariable String code) {
+    public ResponseEntity<APIResponse<CouponResponseDTO>> getCouponByCode(@PathVariable String code) {
         log.info("CouponController::getCouponByCode {}", code);
         CouponResponseDTO couponResponseDTO = couponService.getCouponByCode(code);
 
@@ -71,7 +71,7 @@ public class CouponController {
     }
 
     @PostMapping
-    public ResponseEntity<APIResponse> createCoupon(@RequestBody @Valid CouponRequestDTO couponRequestDTO) {
+    public ResponseEntity<APIResponse<CouponResponseDTO>> createCoupon(@RequestBody @Valid CouponRequestDTO couponRequestDTO) {
         log.info("CouponController::createCoupon request body {}", ValueMapper.jsonToString(couponRequestDTO));
 
         CouponResponseDTO createdCoupon = couponService.createCoupon(couponRequestDTO);
@@ -87,7 +87,7 @@ public class CouponController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<APIResponse> updateCoupon(
+    public ResponseEntity<APIResponse<CouponResponseDTO>> updateCoupon(
             @PathVariable Long id,
             @Valid @RequestBody CouponRequestDTO couponRequestDTO
     ) {
