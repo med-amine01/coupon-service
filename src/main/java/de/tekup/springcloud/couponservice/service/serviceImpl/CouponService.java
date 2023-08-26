@@ -15,7 +15,6 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -161,10 +160,11 @@ public class CouponService implements CouponServiceInterface {
 
         try {
             log.info("CouponService::deleteCoupon - Deleting coupon with ID: {}", id);
+            
             Coupon coupon = couponRepository.findById(id)
                     .orElseThrow(() -> new CouponNotFoundException("Coupon with ID " + id + " not found"));
-
             couponRepository.delete(coupon);
+            
             log.info("CouponService::deleteCoupon - Deleted coupon with ID: {}", id);
         } catch (CouponNotFoundException exception) {
             log.error(exception.getMessage());

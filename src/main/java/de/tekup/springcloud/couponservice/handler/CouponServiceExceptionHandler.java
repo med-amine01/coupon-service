@@ -47,7 +47,7 @@ public class CouponServiceExceptionHandler {
 
     // Coupon already exists exception handler
     @ExceptionHandler(CouponAlreadyExistsException.class)
-    public APIResponse<?> handleProductNotFoundException(CouponAlreadyExistsException exception) {
+    public APIResponse<?> handleCouponAlreadyExistsException(CouponAlreadyExistsException exception) {
         APIResponse<?> serviceResponse = new APIResponse<>();
         serviceResponse.setStatus(FAILED);
         serviceResponse.setErrors(Collections.singletonList(new ErrorDTO("", exception.getMessage())));
@@ -56,7 +56,7 @@ public class CouponServiceExceptionHandler {
 
     // Coupon Not Found exception handler
     @ExceptionHandler(CouponNotFoundException.class)
-    public APIResponse<?> handleProductNotFoundException(CouponNotFoundException exception) {
+    public APIResponse<?> handleCouponNotFoundException(CouponNotFoundException exception) {
         APIResponse<?> serviceResponse = new APIResponse<>();
         serviceResponse.setStatus(FAILED);
         serviceResponse.setErrors(Collections.singletonList(new ErrorDTO("", exception.getMessage())));
