@@ -1,4 +1,4 @@
-package de.tekup.springcloud.couponservice.service;
+package de.tekup.springcloud.couponservice.service.serviceImpl;
 
 import de.tekup.springcloud.couponservice.dto.CouponRequestDTO;
 import de.tekup.springcloud.couponservice.dto.CouponResponseDTO;
@@ -7,23 +7,24 @@ import de.tekup.springcloud.couponservice.exception.CouponAlreadyExistsException
 import de.tekup.springcloud.couponservice.exception.CouponNotFoundException;
 import de.tekup.springcloud.couponservice.exception.CouponServiceBusinessException;
 import de.tekup.springcloud.couponservice.repository.CouponRepository;
+import de.tekup.springcloud.couponservice.service.CouponServiceInterface;
 import de.tekup.springcloud.couponservice.util.ValueMapper;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
 @Slf4j
-public class CouponService {
+public class CouponService implements CouponServiceInterface {
 
     private CouponRepository couponRepository;
 
+    @Override
     @Cacheable(value = "coupon")
     public List<CouponResponseDTO> getCoupons() throws CouponServiceBusinessException {
         try {
@@ -33,7 +34,7 @@ public class CouponService {
 
             List<CouponResponseDTO> couponResponseDTOS = coupons.stream()
                     .map(ValueMapper::convertToDto)
-                    .collect(Collectors.toList());
+                    .toList();
 
             log.info("CouponService::getCoupons - Fetched {} coupons", couponResponseDTOS.size());
 
@@ -46,7 +47,7 @@ public class CouponService {
         }
     }
 
-
+    @Override
     @Cacheable(value = "coupon")
     public CouponResponseDTO getCouponById(Long id) throws CouponServiceBusinessException {
         try {
@@ -73,7 +74,7 @@ public class CouponService {
         }
     }
 
-
+    @Override
     @Cacheable(value = "coupon")
     public CouponResponseDTO getCouponByCode(String code) throws CouponServiceBusinessException {
         try {
@@ -99,7 +100,7 @@ public class CouponService {
         }
     }
 
-
+    @Override
     public CouponResponseDTO createCoupon(CouponRequestDTO couponRequestDTO) {
         try {
             log.info("CouponService::createCoupon - STARTED.");
@@ -127,6 +128,7 @@ public class CouponService {
         }
     }
 
+    @Override
     public CouponResponseDTO updateCoupon(Long id, CouponRequestDTO updatedCoupon) throws CouponServiceBusinessException {
         try {
             log.info("CouponService::updateCoupon - Started.");
@@ -153,7 +155,7 @@ public class CouponService {
         }
     }
 
-
+    @Override
     public void deleteCoupon(Long id) {
         log.info("CouponService::deleteCoupon - Starts.");
 
