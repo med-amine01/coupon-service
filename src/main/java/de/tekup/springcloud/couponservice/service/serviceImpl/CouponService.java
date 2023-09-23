@@ -148,6 +148,10 @@ public class CouponService implements CouponServiceInterface {
 
             return couponResponseDTO;
 
+        } catch (CouponNotFoundException exception) {
+            log.error(exception.getMessage());
+            throw exception;
+            
         } catch (Exception exception) {
             log.error("Exception occurred while updating coupon, Exception message: {}", exception.getMessage());
             throw new CouponServiceBusinessException("Exception occurred while updating coupon");
