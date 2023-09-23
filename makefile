@@ -42,6 +42,7 @@ drop-database:
 	@docker exec -i $(MYSQL_CONTAINER_NAME) mysql -u$(MYSQL_USER_NAME) -p$(MYSQL_USER_PASSWORD) -e "DROP DATABASE IF EXISTS $(MYSQL_DATABASE_NAME);"
 	@echo "MySQL database dropped"
 	@echo "RESTART THE SERVICE"
+
 # Remove all running and stopped containers and prune volumes
 .PHONY: purge-containers
 purge-containers:
