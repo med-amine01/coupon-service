@@ -1,8 +1,5 @@
 FROM openjdk:17-oracle
-
-ADD target/coupon-service-0.0.1-SNAPSHOT.jar coupon-service-0.0.1-SNAPSHOT.jar
-
+ADD target/coupon-service-0.0.1-SNAPSHOT.jar /app/target/coupon-service-0.0.1-SNAPSHOT.jar
 LABEL authors="med"
-
-# first thing should be executable when container launched
-ENTRYPOINT ["java","-jar","coupon-service-0.0.1-SNAPSHOT.jar"]
+EXPOSE 9091
+ENTRYPOINT ["java", "-jar", "/app/target/coupon-service-0.0.1-SNAPSHOT.jar"]
