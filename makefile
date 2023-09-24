@@ -9,13 +9,14 @@ MYSQL_DATABASE_NAME := coupon
 .PHONY: info
 info:
 	@echo "Available targets:"
-	@echo "  start              - Start Docker containers using docker-compose"
+	@echo "  start              - Start Coupon-service using docker-compose"
+	@echo "  start-debug        - Start Debug mode using docker-compose-debug"
 	@echo "  stop               - Stop Docker containers using docker-compose"
 	@echo "  drop-database      - Drop the MySQL database"
 	@echo "  purge-containers   - Remove all running and stopped containers and prune volumes"
 	@echo "  purge-images       - Remove all Docker images (depends on purge-containers)"
 	@echo "  regenrate-jar-file - Clean and package Maven project (skip tests)"
-	@echo "  compile            - Restart 'coupon-service' Docker container (depends on regenrate-jar-file)"
+	@echo "  compile            - Restart 'coupon-service' Docker container"
 
 
 # Start Docker containers using docker-compose
@@ -29,6 +30,12 @@ start:
 	@echo " | |__| (_) | |_| | |_) | (_) | | | |_____|__) |  __/ |   \ V /| | (_|  __/ ";
 	@echo "  \____\___/ \__,_| .__/ \___/|_| |_|    |____/ \___|_|    \_/ |_|\___\___| ";
 	@echo "                  |_|                                                       ";
+
+# Start Docker containers using docker-compose
+.PHONY: start-debug
+start-debug:
+	@docker-compose -f docker-compose-debug.yml up -d
+	@echo "=========================== START DEBUGGING ===============================";
 
 # Stop Docker containers using docker-compose
 .PHONY: stop

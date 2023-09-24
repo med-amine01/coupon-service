@@ -10,7 +10,6 @@ services:
       dockerfile: Dockerfile
     container_name: coupon-service
     image: coupon-service
-    restart: on-failure
     ports:
       - 10555:9091 # Application port
       - 5005:5005 # Debug port
@@ -21,8 +20,7 @@ services:
       - WAIT_HOSTS=docker-mysql:3306
       - JAVA_TOOL_OPTIONS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
     volumes:
-      - ./src:/app/src
-      - ./target/:/app/target
+      - ./target/:/app/target/
 
   docker-mysql:
     container_name: docker-mysql
@@ -37,4 +35,4 @@ services:
       test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
       interval: 4s
       timeout: 20s
-      retries: 5
+      retries: 3
