@@ -1,9 +1,21 @@
 version: '3'
-networks:
-  mynetwork:
-    driver: bridge
 
 services:
+  # Eureka server
+  discovery-server:
+    container_name: discovery-server
+    image: madchicken98/discovery-server
+    ports:
+      - "8761:8761"
+    networks:
+      - my-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Coupon service
   coupon-service:
     build:
       context: .
@@ -11,15 +23,31 @@ services:
     container_name: coupon-service
     image: coupon-service
     ports:
-      - 10555:9091
+      - "10555:9091"
+    networks:
+      - my-network
     depends_on:
       docker-mysql:
         condition: service_healthy
+      discovery-server:
+        condition: service_started
     environment:
       - WAIT_HOSTS=docker-mysql:3306
     volumes:
       - ./target/:/app/target
 
+  # Api gateway
+  api-gateway:
+    container_name: api-gateway
+    image: madchicken98/api-gateway
+    restart: on-failure
+    ports:
+      - "8765:8765"
+    depends_on:
+      - discovery-server
+      - coupon-service
+
+  # Database
   docker-mysql:
     container_name: docker-mysql
     image: mysql
@@ -28,9 +56,15 @@ services:
       - MYSQL_ROOT_PASSWORD=Mad123**
       - MYSQL_ROOT_HOST=%
     ports:
-      - 6666:3306
+      - "6666:3306"
+    networks:
+      - my-network
     healthcheck:
       test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
       interval: 4s
       timeout: 20s
       retries: 3
+
+networks:
+  my-network:
+    driver: bridge
