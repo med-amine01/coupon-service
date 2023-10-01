@@ -41,13 +41,15 @@ services:
     container_name: api-gateway
     image: madchicken98/api-gateway
     restart: on-failure
+    networks:
+      - my-network
     ports:
       - "8765:8765"
     depends_on:
       - discovery-server
       - coupon-service
 
-  # Database
+  # Mysql db
   docker-mysql:
     container_name: docker-mysql
     image: mysql
@@ -55,10 +57,10 @@ services:
     environment:
       - MYSQL_ROOT_PASSWORD=Mad123**
       - MYSQL_ROOT_HOST=%
-    ports:
-      - "6666:3306"
     networks:
       - my-network
+    ports:
+      - "6666:3306"
     healthcheck:
       test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
       interval: 4s

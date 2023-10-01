@@ -31,16 +31,22 @@ start:
 	@echo "  \____\___/ \__,_| .__/ \___/|_| |_|    |____/ \___|_|    \_/ |_|\___\___| ";
 	@echo "                  |_|                                                       ";
 
+# Restart 'coupon-service' Docker container (depends on purge-containers)
+.PHONY: restart
+restart: purge-containers start
+	@echo "\nCOUPON-SERVICE RESTARTED !"
+
+# Stop Docker containers using docker-compose
+.PHONY: stop
+stop:
+	@docker-compose -f docker-compose.yml stop
+
 # Start Docker containers using docker-compose
 .PHONY: start-debug
 start-debug:
 	@docker-compose -f docker-compose-debug.yml up -d
 	@echo "=========================== START DEBUGGING ===============================";
 
-# Stop Docker containers using docker-compose
-.PHONY: stop
-stop:
-	@docker-compose -f docker-compose.yml stop
 
 # Drop the MySQL database
 .PHONY: drop-database
