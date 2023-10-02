@@ -22,19 +22,18 @@ spring:
       base-path: /api/v1/
   main:
     allow-circular-references: true
+  # Config server
+  config:
+    import: configserver:http://config-server:8888
   mvc:
     pathmatch:
-      matching-strategy: ANT_PATH_MATCHER
+      matching-strategy: ant_path_matcher
 
-eureka:
-  client:
-    register-with-eureka: true
-    fetch-registry: true
-    service-url:
-      defaultZone: http://discovery-server:8761/eureka
-  instance:
-    instance-id: ${spring.application.name}:${spring.application.instance-id:${random.value}}
-    prefer-ip-address: true
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
 
 server:
   port: 9091
